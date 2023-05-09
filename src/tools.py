@@ -1,10 +1,12 @@
+import seaborn as sns
+import sklearn
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import os
 
 
-def read_Files(DIR ='data', count_frames=3):   
+def read_Files(frames_count, DIR ='data'):   
     CLASS = {'Cars':0, 'Drones': 1, 'People':2}
     list_of_file = []   # filename/details
     list_of_img = []    # x
@@ -25,12 +27,12 @@ def read_Files(DIR ='data', count_frames=3):
                         arr.append(a.copy())
                         continue
 
-                    if len(arr) < count_frames and list_of_file[-1].split('\\')[0] == list_of_file[-2].split('\\')[0]:
+                    if len(arr) < frames_count and list_of_file[-1].split('\\')[0] == list_of_file[-2].split('\\')[0]:
                         a = df.to_numpy()
                         a = np.expand_dims(a, axis=0)
                         arr.append(a.copy())
 
-                        if len(arr) == count_frames:
+                        if len(arr) == frames_count:
                             tmp_arr = arr[0]
                             for elem in range(1, len(arr)):
                                 tmp_arr = np.concatenate((tmp_arr, arr[elem]), 0)
@@ -60,4 +62,8 @@ def read_Files(DIR ='data', count_frames=3):
 #     fig.colorbar(img)
 #     plt.pause(0.05)
 #     plt.clf()
-    
+
+def plot_conf_matrix(predicted_labels, true_labels):
+    cmatrix = sklearn.metrics.confusion_matrix(predicted_labels, true_labels, normalize='true')
+    class_labels = ['cars', 'drones', 'humans']
+    sns.heatmap(cmatrix*100, annot=True, fmt='.3g', xticklabels=class_labels, yticklabels=class_labels, cmap="viridis", vmin=0, vmax=100)

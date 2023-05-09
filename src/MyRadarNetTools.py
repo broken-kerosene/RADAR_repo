@@ -1,4 +1,5 @@
 import torch
+from torchvision import transforms
 import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
@@ -65,7 +66,7 @@ def train(model, train_dataloader, val_dataloader, criterion, optimizer, schedul
     model.to(device)
     best_acc = 0
     metrics = {'epoch': [], 'train_loss': [], 'test_lose': [], 'accuracy': [] }
-    ep = []
+    fig = plt.figure(figsize=(12,4))
     for epoch in (range(1, n_epochs+1)):
         train_loss = train_one_epoch(model, train_dataloader, criterion, optimizer, epoch, device)       
         valid_loss, predicted, true = predict(model, val_dataloader, criterion, device)
@@ -76,7 +77,7 @@ def train(model, train_dataloader, val_dataloader, criterion, optimizer, schedul
         metrics['accuracy'].append(accuracy * 100)
         
         clear_output(True)
-        plot_losses(metrics)
+        plot_losses(fig, metrics)
              
         if best_acc < accuracy:
             best_acc = accuracy
@@ -84,13 +85,13 @@ def train(model, train_dataloader, val_dataloader, criterion, optimizer, schedul
         if scheduler != None:
             scheduler.step()
             
-def plot_losses(metrics):
+def plot_losses(fig, metrics):
         print(f"Эпоха: {metrics['epoch'][-1]};\t"
             + f"train loss: {metrics['train_loss'][-1]:.3f};\t"
             + f"valid loss: {metrics['test_lose'][-1]:.3f};\t"
             + f"Точность: {metrics['accuracy'][-1]:.2f} % ")
         x = metrics['epoch']
-        fig = plt.figure(figsize=(12,4))
+        # fig = plt.figure(figsize=(12,4))
         plt.subplot(1, 2, 1)
         plt.plot(x, metrics['train_loss'], x, metrics['test_lose'])
         plt.title('Loss')
@@ -104,7 +105,9 @@ def plot_losses(metrics):
         plt.legend(['accuracy'], loc=2)
         plt.ylim([70, 100])
         plt.grid()
-        plt.show()
+
+        plt.pause(0.05)
+        plt.clf()
 
 def save_model(model, best_acc, path_dir="model/",):
     torch.save(model, f"{path_dir}MyRadarNet_acc_{100 * best_acc:.2f}.pth")
