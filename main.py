@@ -18,8 +18,8 @@ def main() -> int:
     device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
     print("Device is ready: ", device)
     frames_count = 3
-    x, y, _ = read_Files()   
-
+    x, y, _ = read_Files(frames_count)   
+    print(x.shape, y.shape)
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
     train_dataloader, val_dataloader = make_dataloader(X_train, X_test, y_train, y_test, batch=64)
 

@@ -4,13 +4,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from IPython.display import clear_output
 from sklearn.metrics import accuracy_score
+import os
 
 def make_dataloader(X_train, X_test, y_train, y_test, batch = 128):
     X_train = torch.Tensor(X_train)
-    y_train = torch.Tensor(y_train).cuda().long()
-
+    
     X_test = torch.Tensor(X_test)
-    y_test = torch.Tensor(y_test).cuda().long()
+    device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+    if device == "cuda:0":
+        y_train = torch.Tensor(y_train).cuda().long()
+        y_test = torch.Tensor(y_test).cuda().long()
+    else:
+        y_train = torch.Tensor(y_train).cpu().long()
+        y_test = torch.Tensor(y_test).cpu().long()
 
     print(X_train.shape, y_train.shape, X_test.shape, y_test.shape)
     train_dataset = torch.utils.data.TensorDataset(X_train, y_train)
@@ -109,6 +115,8 @@ def plot_losses(fig, metrics):
         plt.pause(0.05)
         plt.clf()
 
-def save_model(model, best_acc, path_dir="model/",):
-    torch.save(model, f"{path_dir}MyRadarNet_acc_{100 * best_acc:.2f}.pth")
-    torch.save(model.state_dict(), f"{path_dir}MyRadarNet_acc_{100 * best_acc:.2f}_w.pt")
+def save_model(model, best_acc, path_dir="model",):
+    if not os.path.exists(path_dir):
+        os.mkdir(path_dir)
+    torch.save(model, f"{path_dir}/MyRadarNet_best.pth")
+    torch.save(model.state_dict(), f"{path_dir}/MyRadarNet_best_w.pt")

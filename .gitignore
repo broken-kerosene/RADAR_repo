@@ -1,3 +1,6 @@
 **/__pycache__
 *data/
 model/*
+.vkr/
+.vscode/
+*.zip

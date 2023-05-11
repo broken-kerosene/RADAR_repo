@@ -16,7 +16,7 @@ def read_Files(frames_count, DIR ='data'):
     for root, dirs, files in tqdm(list(os.walk(DIR))):
         for file in files:
             if file.endswith('.csv'):
-                tmp = root.strip().split('\\')
+                tmp = root.strip().split('/')
                 if tmp[-2] in CLASS:
                     list_of_file.append(os.path.join('/'.join(tmp[-3:]),file))
                     df = pd.read_csv(os.path.join(root,file), sep=',',header=None)
@@ -27,7 +27,7 @@ def read_Files(frames_count, DIR ='data'):
                         arr.append(a.copy())
                         continue
 
-                    if len(arr) < frames_count and list_of_file[-1].split('\\')[0] == list_of_file[-2].split('\\')[0]:
+                    if len(arr) < frames_count and list_of_file[-1].split('/')[0] == list_of_file[-2].split('/')[0]:
                         a = df.to_numpy()
                         a = np.expand_dims(a, axis=0)
                         arr.append(a.copy())
@@ -40,7 +40,7 @@ def read_Files(frames_count, DIR ='data'):
                             list_of_classi.append(CLASS[tmp[-2]])
                             arr.clear()
 
-                    if list_of_file[-1].split('\\')[0] != list_of_file[-2].split('\\')[0]:
+                    if list_of_file[-1].split('/')[0] != list_of_file[-2].split('/')[0]:
                         arr.clear()
 
     x = np.array(list_of_img)
