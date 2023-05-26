@@ -88,6 +88,7 @@ def train(model, train_dataloader, val_dataloader, criterion, optimizer, schedul
         if best_acc < accuracy:
             best_acc = accuracy
             save_model(model, best_acc)
+            
         if scheduler != None:
             scheduler.step()
             
@@ -115,8 +116,33 @@ def plot_losses(fig, metrics):
         plt.pause(0.05)
         plt.clf()
 
-def save_model(model, best_acc, path_dir="model",):
+def save_model(model, best_acc, path_dir="model"):
     if not os.path.exists(path_dir):
         os.mkdir(path_dir)
-    torch.save(model, f"{path_dir}/MyRadarNet_best.pth")
-    torch.save(model.state_dict(), f"{path_dir}/MyRadarNet_best_w.pt")
+    sm = torch.jit.script(model)
+    sm.save(f"{path_dir}/MyRadarNet_best.pt")
+    # torch.save(model, f"{path_dir}/MyRadarNet_best.pth")
+    # torch.save(model.state_dict(), f"{path_dir}/MyRadarNet_best_w.pt")
+
+
+
+def convert_onnx(model, input_size, path_dir="model"): 
+
+    # set the model to inference mode 
+    model.eval() 
+
+    # Let's create a dummy input tensor  
+    dummy_input = torch.randn((1, input_size, 11, 61), requires_grad=True)  
+
+    # Export the model   
+    torch.onnx.export(model,         # model being run 
+         dummy_input,       # model input (or a tuple for multiple inputs) 
+         f"{path_dir}/MyRadarNet_best.onnx",       # where to save the model  
+         export_params=True,  # store the trained parameter weights inside the model file 
+         opset_version=10,    # the ONNX version to export the model to 
+         do_constant_folding=True,  # whether to execute constant folding for optimization 
+         input_names = ['modelInput'],   # the model's input names 
+         output_names = ['modelOutput'], # the model's output names 
+         dynamic_axes={'modelInput' : {0 : 'batch_size'},    # variable length axes 
+                                'modelOutput' : {0 : 'batch_size'}}) 
+    print('Model has been converted to ONNX') 

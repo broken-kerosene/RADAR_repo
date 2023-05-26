@@ -34,7 +34,7 @@ def main() -> int:
 
     torch.cuda.empty_cache()
     train(model, train_dataloader, val_dataloader, criterion, optimizer, scheduler, device, n_epochs)
-
+    convert_onnx(model, frames_count)
     _, predicted_labels, true_labels = predict(model, val_dataloader, criterion, device)
     plot_conf_matrix(predicted_labels, true_labels)
 
