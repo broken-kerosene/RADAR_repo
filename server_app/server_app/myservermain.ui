@@ -58,7 +58,7 @@
     <item row="0" column="0">
      <widget class="QGroupBox" name="groupBox_2">
       <property name="title">
-       <string>torch script file .pt</string>
+       <string>onnx model</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="1" column="2">
@@ -76,7 +76,11 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QLineEdit" name="leReadModel"/>
+        <widget class="QLineEdit" name="leReadModel">
+         <property name="text">
+          <string>../../model/MyRadarNet_best.onnx</string>
+         </property>
+        </widget>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_2">

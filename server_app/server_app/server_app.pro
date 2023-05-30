@@ -15,11 +15,13 @@ INCLUDEPATH += /home/kerosene/Downloads/onnxruntime-linux-x64-1.14.1/include
 SOURCES += \
     main.cpp \
     messageprocessor.cpp \
+    myclassifier.cpp \
     myservermain.cpp
 
 HEADERS += \
     messageheaders.h \
     messageprocessor.h \
+    myclassifier.h \
     myservermain.h
 
 FORMS += \
