@@ -4,6 +4,7 @@
 #include <QIODevice>
 
 namespace {
+    const uint countFrames{3};
     const uint countRows{11};
     const uint countColumns{61};
     const uint headerSize{16};
@@ -57,13 +58,13 @@ void MessageProcessor::classificationParser()
 {
     QDataStream ds(&messagePayload, QIODevice::ReadOnly);
     ds.setByteOrder(QDataStream::LittleEndian);
-    std::vector<int> objectImage;
-    uint size = countRows * countColumns;
+    std::vector<float> objectImage;
+    uint size = countFrames * countRows * countColumns;
     objectImage.resize(size);
     for(uint i=0; i<size; ++i){
        ds >> objectImage[i];
     }
-    emit classificationComplete();
+    emit classificationDataReady(objectImage);
 }
 
 void MessageProcessor::modelParser()

@@ -21,6 +21,7 @@ private:
 
 signals:
     void stageEnded();
+    void classificationDataReady(std::vector<float> objct);
     void classificationComplete();
     void modelParsingComplete();
 

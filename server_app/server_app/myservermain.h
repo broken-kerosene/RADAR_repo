@@ -7,6 +7,7 @@
 //#define slots Q_SLOTS
 #include <QMainWindow>
 #include "messageprocessor.h"
+#include "myclassifier.h"
 
 class QTcpServer;
 class QTcpSocket;
@@ -27,8 +28,14 @@ public slots:
     void startServer();
     void stopServer();
     void choseModelFile();
-    void readModelFile();
+    void readModelFile(std::vector<float> &object);
     void reciveTcpMsg();
+//    void sendResponseMsg();
+    void startClassification(const std::vector<float> &object);
+
+signals:
+    void makeResponseMessage(short result);
+    void testSend(std::vector<float> &object);
 
 private:
     Ui::MyServerMain *ui;
@@ -36,5 +43,7 @@ private:
     QTcpSocket *clientConnection;
     MessageProcessor *message;
     QByteArray rawMessageBuffer;
+    MyClassifier *classificator;
+    std::vector<float> object;
 };
 #endif // MYSERVERMAIN_H

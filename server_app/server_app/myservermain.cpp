@@ -1,7 +1,6 @@
 #include "myservermain.h"
 #include "ui_myservermain.h"
 #include "onnxruntime_cxx_api.h"
-#include "myclassifier.h"
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QFileDialog>
@@ -9,16 +8,17 @@
 #include <cmath>
 
 namespace{
+const std::vector<std::string> classes {"Car", "Drone", "Human"};
+const int framesCount_{3};
 const int width_{61};
 const int height_{11};
-const int size_{3 * width_ * height_};
-    bool readTensorFromFile(QString path, std::array<float, size_> &input_image_)
+const int size_{framesCount_ * width_ * height_};
+    bool readTensorFromFile(QString path, std::vector<float> &input_image_)
     {
         QDir dir(path);
         QStringList files = dir.entryList();
         files.removeFirst();
         files.removeFirst();
-        uint j=0;
         for(uint i=0; i<3; ++i){
             QFile file(path + QDir::separator() + files[i]);
             if (!file.open(QIODevice::ReadOnly)) {
@@ -30,36 +30,28 @@ const int size_{3 * width_ * height_};
                 QByteArray line = file.readLine();
                 wordList = (QString(line).trimmed().split(','));
                 for(auto &word: wordList){
-                    input_image_[j] = word.toFloat();
-                    ++j;
+                    input_image_.push_back(word.toFloat());
                 }
             }
         }
         return true;
     }
-
-//    template <typename T>
-//    static void softmax(T& input) {
-//        float rowmax = *std::max_element(input.begin(), input.end());
-//        std::vector<float> y(input.size());
-//        float sum = 0.0f;
-//        for (size_t i = 0; i != input.size(); ++i) {
-//            sum += y[i] = std::exp(input[i] - rowmax);
-//        }
-//        for (size_t i = 0; i != input.size(); ++i) {
-//            input[i] = y[i] / sum;
-//        }
-//    }
 }
+
 MyServerMain::MyServerMain(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MyServerMain)
     , serverTcp{new QTcpServer(this)}
     , clientConnection{nullptr}
+    , classificator {new MyClassifier(height_, width_, framesCount_)}
 {
     ui->setupUi(this);
+    classificator->setNames("modelInput", "modelOutput");
+    classificator->loadModel(ui->leReadModel->text().toStdString());
     connect(ui->tbReadModel, &QToolButton::clicked, this, &MyServerMain::choseModelFile);
-    connect(ui->pbReadModel, &QPushButton::clicked, this, &MyServerMain::readModelFile);
+    connect(ui->pbReadModel, &QPushButton::clicked, this, [this](){emit testSend(object);});
+    connect(this, &MyServerMain::testSend, this, &MyServerMain::readModelFile);
+//    connect(message, &MessageProcessor::classificationDataReady, this, &MyServerMain::startClassification);
 }
 
 MyServerMain::~MyServerMain()
@@ -101,46 +93,26 @@ void MyServerMain::choseModelFile()
     }
 }
 
-void MyServerMain::readModelFile()
+void MyServerMain::readModelFile(std::vector<float> &object)
 {
-    /*
-     * https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/MNIST/MNIST.cpp
-     */
-    std::array<float, size_> input_image_{};
-    std::array<float, 3> results_{};
-    int64_t result_{0};
-    readTensorFromFile("/home/kerosene/study/RADAR_repo/data/People/12-21f/", input_image_);
-    MyClassifier test(11, 61, 3);
-//    Ort::Value input_tensor_{nullptr};
-//    std::array<int64_t, 4> input_shape_{1, 3, height_, width_};
-
-//    Ort::Value output_tensor_{nullptr};
-//    std::array<int64_t, 2> output_shape_{1, 3};
-
-//    auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
-//    input_tensor_ = Ort::Value::CreateTensor<float>(memory_info, input_image_.data(), input_image_.size(),
-//                                                    input_shape_.data(), input_shape_.size());
-//    output_tensor_ = Ort::Value::CreateTensor<float>(memory_info, results_.data(), results_.size(),
-//                                                     output_shape_.data(), output_shape_.size());
-//    Ort::Env env;
-//    std::string model_path = ui->leReadModel->text().toStdString();
-//    Ort::Session *mysession;
-//    mysession = new Ort::Session(env, model_path.c_str(), Ort::SessionOptions{ nullptr });
-
-////    const char* input_names[] = {"modelInput"};
-//    char * input_names[] = {"modelInput"};
-//    const char* output_names[] = {"modelOutput"};
-
-//    Ort::RunOptions run_options;
-//    mysession->Run(run_options, input_names, &input_tensor_, 1, output_names, &output_tensor_, 1);
-//    softmax(results_);
-//    result_ = std::distance(results_.begin(), std::max_element(results_.begin(), results_.end()));
-//    qDebug() << result_;
+    if(object.size() == 0) {
+        readTensorFromFile("/home/kerosene/study/RADAR_repo/data/People/12-21f/", object);
+    }
+    short result = classificator->predict(object);
+    QString msg =  QString::fromStdString(classes[result]);
+    ui->lwServer->addItem("The class is: " + msg);
+//    emit makeResponseMessage(result);
 }
 
 void MyServerMain::reciveTcpMsg()
 {
     rawMessageBuffer += clientConnection->readAll();
     bool msgIsReady = message->checkTcpMessageLen(rawMessageBuffer);
+}
 
+void MyServerMain::startClassification(const std::vector<float> &object)
+{
+    short result  = classificator->predict(object);
+    QString msg =  QString::fromStdString(classes[result]);
+    ui->lwServer->addItem("The class is: " + msg);
 }
