@@ -28,7 +28,7 @@ public slots:
     void startServer();
     void stopServer();
     void choseModelFile();
-    void readModelFile(std::vector<float> &object);
+    void readModelFile();
     void reciveTcpMsg();
 //    void sendResponseMsg();
     void startClassification(const std::vector<float> &object);

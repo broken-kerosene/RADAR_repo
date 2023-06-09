@@ -21,15 +21,17 @@ private:
 
 signals:
     void stageEnded();
-    void classificationDataReady(std::vector<float> objct);
+    void classificationDataReady(std::vector<float> &objct);
     void classificationComplete();
     void modelParsingComplete();
 
 public slots:
-    void rawMessageParser();
+    void rawMessageParser(QByteArray &ba);
     void classificationParser();
     void modelParser();
 
+public:
+    std::vector<float> objectImage;
 };
 
 #endif // MESSAGEPROCESSOR_H

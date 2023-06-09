@@ -49,6 +49,7 @@ bool MyClassifier::loadModel(const std::string modelFilepath)
     Ort::Env env;
     Ort::SessionOptions opt{nullptr};
     mySession = new Ort::Session(env, modelFilepath.c_str(), opt );
+    return true;
 }
 
 short MyClassifier::predict(const std::vector<float> &input_image)

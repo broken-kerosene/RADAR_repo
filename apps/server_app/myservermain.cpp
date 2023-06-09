@@ -1,6 +1,8 @@
 #include "myservermain.h"
 #include "ui_myservermain.h"
 #include "onnxruntime_cxx_api.h"
+#include "messageheaders.h"
+
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QFileDialog>
@@ -41,9 +43,10 @@ const int size_{framesCount_ * width_ * height_};
 MyServerMain::MyServerMain(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MyServerMain)
-    , serverTcp{new QTcpServer(this)}
+    , serverTcp{nullptr}
     , clientConnection{nullptr}
     , classificator {new MyClassifier(height_, width_, framesCount_)}
+    , message{new MessageProcessor}
 {
     ui->setupUi(this);
     classificator->setNames("modelInput", "modelOutput");
@@ -51,21 +54,28 @@ MyServerMain::MyServerMain(QWidget *parent)
     connect(ui->tbReadModel, &QToolButton::clicked, this, &MyServerMain::choseModelFile);
     connect(ui->pbReadModel, &QPushButton::clicked, this, [this](){emit testSend(object);});
     connect(this, &MyServerMain::testSend, this, &MyServerMain::readModelFile);
-//    connect(message, &MessageProcessor::classificationDataReady, this, &MyServerMain::startClassification);
+    connect(ui->pbStartServer, &QPushButton::clicked, this, &MyServerMain::startServer);
+    connect(ui->pbStopServer, &QPushButton::clicked, this, &MyServerMain::stopServer);
+    connect(message, &MessageProcessor::stageEnded, this, &MyServerMain::readModelFile);
 }
 
 MyServerMain::~MyServerMain()
 {
+    serverTcp->close();
+    delete serverTcp;
+    delete message;
     delete ui;
 }
 
 void MyServerMain::startServer()
 {
+    serverTcp = new QTcpServer;
     connect(serverTcp, &QTcpServer::newConnection, this, [this]()
     {
         if (clientConnection != nullptr) {
-            clientConnection->close();
-            delete clientConnection;
+            return;
+//            clientConnection->close();
+//            delete clientConnection;
         }
         clientConnection = serverTcp->nextPendingConnection();
         ui->lwServer->addItem("New TCP connection from: "
@@ -75,12 +85,43 @@ void MyServerMain::startServer()
                 &QTcpSocket::readyRead,
                 this,
                 &MyServerMain::reciveTcpMsg);
+        connect(clientConnection, &QTcpSocket::disconnected, this, [this]()
+        {
+            qDebug() << "here";
+            clientConnection->flush();
+            clientConnection->close();
+        });
+
     });
+
+
+    int port = ui->sbPort->value();
+    if(!serverTcp->listen(QHostAddress::LocalHost, port )) {
+        qDebug() << "Server could not start";
+    } else {
+        ui->lwServer->addItem("Server started! adress: "
+                              + QHostAddress(QHostAddress::LocalHost).toString()
+                              + " Port: "
+                              + QString::number(port));
+    }
 }
 
 void MyServerMain::stopServer()
 {
-
+//    QString adr = clientConnection->peerAddress().toString();
+//    QString port = QString::number(clientConnection->peerPort());
+//    clientConnection->close();
+//    clientConnection = nullptr;
+//    ui->lwServer->addItem("Connection from: "
+//                          + adr
+//                          + " port: "
+//                          + port);
+    if(!serverTcp)
+        return;
+    serverTcp->close();
+    delete serverTcp;
+    serverTcp = nullptr;
+    ui->lwServer->addItem("Server is stoped");
 }
 
 void MyServerMain::choseModelFile()
@@ -93,10 +134,12 @@ void MyServerMain::choseModelFile()
     }
 }
 
-void MyServerMain::readModelFile(std::vector<float> &object)
+void MyServerMain::readModelFile()
 {
+
+    object = message->objectImage;
     if(object.size() == 0) {
-        readTensorFromFile("/home/kerosene/study/RADAR_repo/data/People/12-21f/", object);
+        readTensorFromFile("../../data/People/12-21f/", object);
     }
     short result = classificator->predict(object);
     QString msg =  QString::fromStdString(classes[result]);
@@ -108,6 +151,12 @@ void MyServerMain::reciveTcpMsg()
 {
     rawMessageBuffer += clientConnection->readAll();
     bool msgIsReady = message->checkTcpMessageLen(rawMessageBuffer);
+    qDebug() << msgIsReady;
+    if(msgIsReady){
+        message->rawMessageParser(rawMessageBuffer);
+        rawMessageBuffer.clear();
+    }
+
 }
 
 void MyServerMain::startClassification(const std::vector<float> &object)
