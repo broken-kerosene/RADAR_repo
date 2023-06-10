@@ -19,7 +19,7 @@ inline QDataStream &operator <<(QDataStream &out, const MessageHeader &any)
     return out;
 }
 
-QDataStream &operator >>(QDataStream &out, MessageHeader &any)
+inline QDataStream &operator >>(QDataStream &out, MessageHeader &any)
 {
     out >> any.tag;
     out >> any.type;
@@ -27,7 +27,7 @@ QDataStream &operator >>(QDataStream &out, MessageHeader &any)
     return out;
 }
 
-QDebug operator <<(QDebug dbg, const MessageHeader &any)
+inline QDebug operator <<(QDebug dbg, const MessageHeader &any)
 {
     dbg << any.tag << any.type << any.len;
     return dbg;

@@ -94,7 +94,7 @@
        <item row="0" column="0" colspan="2">
         <widget class="QLineEdit" name="leFilename">
          <property name="text">
-          <string>../../data/Cars/13-13</string>
+          <string>../../data/Cars/15-55p</string>
          </property>
         </widget>
        </item>
@@ -106,7 +106,11 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLineEdit" name="leModeFile"/>
+        <widget class="QLineEdit" name="leModelFile">
+         <property name="text">
+          <string>../../model/MyRadarNet_best.onnx</string>
+         </property>
+        </widget>
        </item>
        <item row="2" column="2">
         <widget class="QToolButton" name="tbReadModelFile">

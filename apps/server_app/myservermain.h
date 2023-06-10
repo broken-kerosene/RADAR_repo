@@ -31,7 +31,6 @@ public slots:
     void readModelFile();
     void reciveTcpMsg();
 //    void sendResponseMsg();
-    void startClassification(const std::vector<float> &object);
 
 signals:
     void makeResponseMessage(short result);

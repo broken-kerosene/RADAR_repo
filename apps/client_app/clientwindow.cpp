@@ -5,7 +5,6 @@
 #include <QFileDialog>
 #include <QTcpSocket>
 #include <QHostAddress>
-#include <QIODevice>
 
 namespace{
 const std::vector<std::string> classes {"Car", "Drone", "Human"};
@@ -19,8 +18,7 @@ const int size_{framesCount_ * width_ * height_};
         QStringList files = dir.entryList();
         files.removeFirst();
         files.removeFirst();
-        for(uint i=0; i<3; ++i){
-            QFile file(path + QDir::separator() + files[i]);
+        for(uint i=0; i<3; ++i){ QFile file(path + QDir::separator() + files[i]);
             if (!file.open(QIODevice::ReadOnly)) {
                 qDebug() << file.errorString();
                 return false;
@@ -46,9 +44,11 @@ clientWindow::clientWindow(QWidget *parent)
 {
     ui->setupUi(this);
     connect(ui->tbReadFile, &QToolButton::clicked, this, &clientWindow::choseFilePath);
+    connect(ui->tbReadModelFile, &QToolButton::clicked, this, &clientWindow::choseModelFilePath);
     connect(ui->pbConnect, &QPushButton::clicked, this, &clientWindow::makeConnection);
     connect(ui->pbDisconnect, &QPushButton::clicked, this, &clientWindow::makeDisconnection);
     connect(ui->pbClassification, &QPushButton::clicked, this, &clientWindow::classificate);
+    connect(ui->pbSendModel, &QPushButton::clicked, this, &clientWindow::sendModel);
 }
 
 clientWindow::~clientWindow()
@@ -63,7 +63,17 @@ void clientWindow::choseFilePath()
                                                              ("Select Output Folder"),
                                                              QDir::currentPath());
     ui->leFilename->setText(outputFolder);
-    readClassFile();
+}
+
+void clientWindow::choseModelFilePath()
+{
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setNameFilter(tr("model (*.onnx)"));
+    if (dialog.exec()) {
+        ui->leModelFile->setText(dialog.selectedFiles().first());
+    }
+
 }
 
 void clientWindow::readClassFile()
@@ -116,13 +126,14 @@ void clientWindow::classificate()
     if(!socket){
         return;
     }
+    readClassFile();
     QByteArray data;
     QDataStream ds(&data, QIODevice::WriteOnly);
     ds.setByteOrder(QDataStream::LittleEndian);
     MessageHeader messageHead;
     messageHead.tag = tag++;
     messageHead.type = 1;
-    messageHead.len = inputImage.size() * sizeof(float);
+    messageHead.len = inputImage.size() * sizeof(float)*2;
     qDebug() << "len" << messageHead.len;
     ds << messageHead;
     for(int i=0; i<inputImage.size(); ++i){
@@ -130,6 +141,34 @@ void clientWindow::classificate()
     }
     int msgSize = socket->write(data);
     qDebug() << "msg size" << msgSize;
-//    socket->waitForBytesWritten();
+    socket->waitForBytesWritten();
+}
+
+void clientWindow::sendModel()
+{
+    QFile file(ui->leModelFile->text());
+    if(!file.open(QIODevice::ReadOnly)){
+        return;
+    }
+
+    MessageHeader messageHead;
+    messageHead.tag = tag++;
+    messageHead.type = 2;
+    messageHead.len = file.size()+sizeof(int);
+    qDebug() << "len" << messageHead.len << "filesize" << file.size();
+    QByteArray data;
+    QByteArray fileData{file.readAll()};
+    QDataStream ds(&data, QIODevice::WriteOnly);
+    ds.setByteOrder(QDataStream::LittleEndian);
+    ds << messageHead << fileData;
+
+//    for(auto &elem: fileData){
+//        ds << elem;
+//    }
+    int msgSize = socket->write(data);
+    socket->waitForBytesWritten();
+    qDebug() << "msg size" << msgSize;
+
+
 }
 

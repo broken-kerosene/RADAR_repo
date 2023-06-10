@@ -32,7 +32,8 @@ bool MessageProcessor::checkTcpMessageLen(const QByteArray &ba) const
         QDataStream stream(baLen);
         stream.setByteOrder(QDataStream::LittleEndian); // or BigEndian
         stream >> len;
-        if(ba.size() - headerSize == len*2) {
+        qDebug() << "len:" << len << "ba.size" << ba.size();
+        if(ba.size() - headerSize == len) {
             return true;
         }
     }
@@ -44,11 +45,9 @@ void MessageProcessor::rawMessageParser(QByteArray &ba)
     QDataStream ds(&ba, QIODevice::ReadOnly);
     ds.setByteOrder(QDataStream::LittleEndian);
     ds >> bufferForHeader;
-    type = bufferForHeader.mid(sizeof(uint), sizeof(uint)).toUInt();
-    size  = bufferForHeader.mid(sizeof(uint)*2, sizeof(uint)).toUInt();
-    qDebug() << "type" << type;
-    messagePayload = bufferForHeader.mid(headerSize, bufferForHeader.size()-headerSize);
-
+    type = bufferForHeader.type;
+    qDebug() << "type" << type << "size:" << bufferForHeader.len;
+    messagePayload = ba.mid(headerSize, bufferForHeader.len);
     processHeader();
 }
 
@@ -73,13 +72,12 @@ void MessageProcessor::classificationParser()
     for(uint i=0; i<size; ++i){
        ds >> objectImage[i];
     }
-    qDebug() << objectImage;
     emit stageEnded();
 }
 
 void MessageProcessor::modelParser()
 {
-    QFile file("../MyReceivedOnnxModel.onnx");
+    QFile file("../../model/MyReceivedOnnxModel.onnx");
 
     if(!file.open(QIODevice::WriteOnly)){
         qDebug() << file.errorString();

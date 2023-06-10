@@ -2,6 +2,8 @@
 #define MESSAGEPROCESSOR_H
 
 #include <QObject>
+#include "messageheaders.h"
+
 
 class MessageProcessor : public QObject
 {
@@ -13,10 +15,9 @@ public:
     bool checkTcpMessageLen(const QByteArray &ba) const;
 
 private:
-    ushort type;
-    uint size;
+    uint type;
     QByteArray rawMessageBuffer;
-    QByteArray bufferForHeader;
+    MessageHeader bufferForHeader;
     QByteArray messagePayload;
     void processHeader();
 

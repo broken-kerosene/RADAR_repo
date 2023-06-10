@@ -2,6 +2,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+//#include <QDebug>
 
     /* Ботва с примером как работать с моделью onnx в c++
      * https://github.com/microsoft/onnxruntime-inference-examples/blob/main/c_cxx/MNIST/MNIST.cpp
@@ -78,6 +79,8 @@ short MyClassifier::predict(const std::vector<float> &input_image)
     Ort::RunOptions run_options;
     mySession->Run(run_options, input_names, &input_tensor_, 1, output_names, &output_tensor_, 1);
     softmax(results_);
+//    for(auto &elem: results_)
+//    qDebug() << "rawResult" << elem;
     result_ = std::distance(results_.begin(), std::max_element(results_.begin(), results_.end()));
     return result_;
 }

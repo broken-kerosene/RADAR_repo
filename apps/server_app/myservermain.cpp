@@ -1,7 +1,6 @@
 #include "myservermain.h"
 #include "ui_myservermain.h"
 #include "onnxruntime_cxx_api.h"
-#include "messageheaders.h"
 
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -134,7 +133,6 @@ void MyServerMain::choseModelFile()
 
 void MyServerMain::readModelFile()
 {
-
     object = message->objectImage;
     if(object.size() == 0) {
         readTensorFromFile("../../data/People/12-21f/", object);
@@ -155,11 +153,4 @@ void MyServerMain::reciveTcpMsg()
         rawMessageBuffer.clear();
     }
 
-}
-
-void MyServerMain::startClassification(const std::vector<float> &object)
-{
-    short result  = classificator->predict(object);
-    QString msg =  QString::fromStdString(classes[result]);
-    ui->lwServer->addItem("The class is: " + msg);
 }

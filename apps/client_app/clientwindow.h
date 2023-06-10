@@ -23,9 +23,11 @@ private:
 
 public slots:
     void choseFilePath();
+    void choseModelFilePath();
     void readClassFile();
     void makeConnection();
     void makeDisconnection();
     void classificate();
+    void sendModel();
 };
 #endif // CLIENTWINDOW_H
