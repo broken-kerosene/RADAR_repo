@@ -46,7 +46,6 @@ clientWindow::clientWindow(QWidget *parent)
 {
     ui->setupUi(this);
     connect(ui->tbReadFile, &QToolButton::clicked, this, &clientWindow::choseFilePath);
-    connect(ui->pbReadFile, &QPushButton::clicked, this, &clientWindow::readClassFile);
     connect(ui->pbConnect, &QPushButton::clicked, this, &clientWindow::makeConnection);
     connect(ui->pbDisconnect, &QPushButton::clicked, this, &clientWindow::makeDisconnection);
     connect(ui->pbClassification, &QPushButton::clicked, this, &clientWindow::classificate);
@@ -64,6 +63,7 @@ void clientWindow::choseFilePath()
                                                              ("Select Output Folder"),
                                                              QDir::currentPath());
     ui->leFilename->setText(outputFolder);
+    readClassFile();
 }
 
 void clientWindow::readClassFile()

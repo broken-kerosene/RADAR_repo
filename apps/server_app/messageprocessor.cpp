@@ -3,6 +3,7 @@
 #include <QByteArray>
 #include <QIODevice>
 #include <QDebug>
+#include <QFile>
 
 namespace {
     const uint countFrames{3};
@@ -44,6 +45,7 @@ void MessageProcessor::rawMessageParser(QByteArray &ba)
     ds.setByteOrder(QDataStream::LittleEndian);
     ds >> bufferForHeader;
     type = bufferForHeader.mid(sizeof(uint), sizeof(uint)).toUInt();
+    size  = bufferForHeader.mid(sizeof(uint)*2, sizeof(uint)).toUInt();
     qDebug() << "type" << type;
     messagePayload = bufferForHeader.mid(headerSize, bufferForHeader.size()-headerSize);
 
@@ -77,7 +79,23 @@ void MessageProcessor::classificationParser()
 
 void MessageProcessor::modelParser()
 {
+    QFile file("../MyReceivedOnnxModel.onnx");
 
-
+    if(!file.open(QIODevice::WriteOnly)){
+        qDebug() << file.errorString();
+        return;
+    }
+    file.write(messagePayload);
+    file.close();
     emit modelParsingComplete();
+}
+
+void MessageProcessor::replayClassMessage()
+{
+
+}
+
+void MessageProcessor::replayFileMessage()
+{
+
 }

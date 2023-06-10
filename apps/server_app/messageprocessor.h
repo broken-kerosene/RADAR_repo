@@ -14,6 +14,7 @@ public:
 
 private:
     ushort type;
+    uint size;
     QByteArray rawMessageBuffer;
     QByteArray bufferForHeader;
     QByteArray messagePayload;
@@ -29,6 +30,8 @@ public slots:
     void rawMessageParser(QByteArray &ba);
     void classificationParser();
     void modelParser();
+    void replayClassMessage();
+    void replayFileMessage();
 
 public:
     std::vector<float> objectImage;

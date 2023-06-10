@@ -61,8 +61,6 @@ MyServerMain::MyServerMain(QWidget *parent)
 
 MyServerMain::~MyServerMain()
 {
-    serverTcp->close();
-    delete serverTcp;
     delete message;
     delete ui;
 }
