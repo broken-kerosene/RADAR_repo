@@ -1,4 +1,6 @@
-# Radar_repo (тут будет что-то про радары)
+# Классификатор образов радиолокационных данных
+## Используемый датасет
+[mygdisk dataset](https://drive.google.com/file/d/1Imet4a3LHVcUTJI9tUpPKMiKtUXhLRz9)
 
 ## Обзор источников инофрмации по тематике
 Литература, статьи и ссылки на полезные материалы
@@ -12,6 +14,5 @@
 4. [Vehicle Detection With Automotive Radar Using Deep Learning on Range-Azimuth-Doppler Tensors](https://openaccess.thecvf.com/content_ICCVW_2019/papers/CVRSUAD/Major_Vehicle_Detection_With_Automotive_Radar_Using_Deep_Learning_on_Range-Azimuth-Doppler_ICCVW_2019_paper.pdf)
 5. [Artificial Neural Networks and Deep Learning Techniques Applied to Radar Target Detection: A Review](https://www.mdpi.com/2079-9292/11/1/156/htm)
 
-### datasets
-1. https://github.com/ZHOUYI1023/awesome-radar-perception
-
+### different datasets
+1. [https://github.com/ZHOUYI1023/awesome-radar-perception](https://github.com/ZHOUYI1023/awesome-radar-perception)
